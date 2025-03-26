@@ -1,5 +1,5 @@
 [
-    { "username": "user1", "password": "$2a$10$O6MPjP3vKXH7rA7P8c5CeeQ2HEVoGnxlP3wAV3K8dmkq9CjwWDa5a" },
-    { "username": "user2", "password": "$2a$10$pGdK2b1h9CCkIYXu1jM7e.KVMyJe7PvwY29b8xOZ27eHXV5uKKo2G" }
-  ]
-  
+  { "name": "alice", "password": "password123" },
+  { "name": "bob",   "password": "secret" },
+  { "name": "a",     "password": "12" }
+]

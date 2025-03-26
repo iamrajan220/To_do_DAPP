@@ -1,155 +1,116 @@
 App = {
   loading: false,
-  contracts: {},
+  todoList: null,
+  account: null,
 
   load: async () => {
-    // Load app...
-    // console.log("app loading...")
-    await App.loadWeb3()
-    await App.loadAccount()
-    await App.loadContract()
-
-    await App.render()
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.render();
   },
 
-  // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
   loadWeb3: async () => {
-    if (typeof web3 !== 'undefined') {
-      App.web3Provider = web3.currentProvider
-      web3 = new Web3(web3.currentProvider)
-    } else {
-      window.alert("Please connect to Metamask.")
-    }
-    // Modern dapp browsers...
     if (window.ethereum) {
-      window.web3 = new Web3(ethereum)
+      window.web3 = new Web3(window.ethereum);
       try {
-        // Request account access if needed
-        await ethereum.enable()
-        // Acccounts now exposed
-        web3.eth.sendTransaction({/* ... */})
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
       } catch (error) {
-        // User denied account access...
+        alert('User denied MetaMask access');
       }
-    }
-    // Legacy dapp browsers...
-    else if (window.web3) {
-      App.web3Provider = web3.currentProvider
-      window.web3 = new Web3(web3.currentProvider)
-      // Acccounts always exposed
-      web3.eth.sendTransaction({/* ... */})
-    }
-    // Non-dapp browsers...
-    else {
-      console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
+    } else {
+      alert('Please install MetaMask!');
     }
   },
 
   loadAccount: async () => {
-    // Set the current blockchain account
-    // App.account = web3.eth.accounts[0]
-    App.account = (await web3.eth.getAccounts())[0];
-    // console.log(App.account)
+    const accounts = await web3.eth.getAccounts();
+    App.account = accounts[0];
+    $('#account').text(App.account);
   },
 
   loadContract: async () => {
-    // Create a JavaScript version of the smart contract
-    const todoList = await $.getJSON('TodoList.json');
-    App.contracts.TodoList = TruffleContract(todoList);
-    App.contracts.TodoList.setProvider(App.web3Provider)
-    // console.log(todoList)
-
-    // Hydrate the smart contract with values from the blockchain
-    App.todoList = await App.contracts.TodoList.deployed();
-    
+    const data = await fetch('TodoList.json').then(res => res.json());
+    const networkId = await web3.eth.net.getId();
+    const address = data.networks[networkId]?.address;
+    if (!address) {
+      alert('Contract not deployed on the detected network.');
+      return;
+    }
+    App.todoList = new web3.eth.Contract(data.abi, address);
   },
 
   render: async () => {
-    // $('#account').html(App.account)
-    // Prevent double render
-    if (App.loading) {
-      return
-    }
-
-    // Update app loading state
-    App.setLoading(true)
-
-    // Render Account
-    $('#account').html(App.account)
-
-    // Render Tasks
-    await App.renderTasks()
-
-    // Update loading state
-    App.setLoading(false)
+    if (App.loading) return;
+    App.setLoading(true);
+    await App.renderTasks();
+    App.setLoading(false);
   },
 
   renderTasks: async () => {
-    // Load the total task count from the blockchain
-    const taskCount = await App.todoList.taskCount()
-    const $taskTemplate = $('.taskTemplate')
-
-    // Render out each task with a new task template
-    for (var i = 1; i <= taskCount; i++) {
-      // Fetch the task data from the blockchain
-      const task = await App.todoList.tasks(i)
-      const taskId = task[0].toNumber()
-      const taskContent = task[1]
-      const taskCompleted = task[2]
-
-      // Create the html for the task
-      const $newTaskTemplate = $taskTemplate.clone()
-      $newTaskTemplate.find('.content').html(taskContent)
-      $newTaskTemplate.find('input')
-                      .prop('name', taskId)
-                      .prop('checked', taskCompleted)
-                      .on('click', App.toggleCompleted)
-
-      // Put the task in the correct list
-      if (taskCompleted) {
-        $('#completedTaskList').append($newTaskTemplate)
+    // Clear current task lists
+    $('#taskList, #completedTaskList').empty();
+    const taskCount = await App.todoList.methods.taskCount().call();
+    
+    for (let i = 1; i <= taskCount; i++) {
+      const task = await App.todoList.methods.tasks(i).call();
+      const $taskItem = $('.taskTemplate li').clone().show();
+      
+      $taskItem.find('.content').text(task.content);
+      $taskItem.find('input')
+        .prop('name', task.id)
+        .prop('checked', task.completed)
+        .on('click', App.toggleCompleted);
+      
+      // Append the task to the appropriate list
+      if (task.completed) {
+        $('#completedTaskList').append($taskItem);
       } else {
-        $('#taskList').append($newTaskTemplate)
+        $('#taskList').append($taskItem);
       }
-
-      // Show the task
-      $newTaskTemplate.show()
     }
   },
 
   createTask: async () => {
-    App.setLoading(true)
-    const content = $('#newTask').val()
-    // https://stackoverflow.com/questions/67273763/blockchain-tutorial-error-the-send-transactions-from-field-must-be-defined
-    // await App.todoList.createTask(content)
-    await App.todoList.createTask(content, {from: App.account})
-    // refresh the page to refetch the tasks
-    window.location.reload()
+    App.setLoading(true);
+    const content = $('#newTask').val().trim();
+    if (content) {
+      try {
+        // Send transaction and wait for confirmation
+        await App.todoList.methods.createTask(content)
+          .send({ from: App.account });
+        $('#newTask').val('');
+        console.log('Task created successfully!');
+      } catch (error) {
+        console.error('Error creating task:', error);
+        alert('Error creating task. Please try again.');
+      }
+    }
+    // Re-render tasks without reloading the page
+    await App.render();
   },
 
   toggleCompleted: async (e) => {
-    App.setLoading(true)
-    const taskId = e.target.name
-    await App.todoList.toggleCompleted(taskId, {from: App.account})
-    window.location.reload()
+    App.setLoading(true);
+    const taskId = e.target.name;
+    try {
+      // Send transaction to toggle task and wait for confirmation
+      await App.todoList.methods.toggleCompleted(taskId)
+        .send({ from: App.account });
+      console.log('Task updated successfully!');
+    } catch (error) {
+      console.error('Error toggling task:', error);
+      alert('Error updating task. Please try again.');
+    }
+    // Update the task list after transaction confirmation
+    await App.render();
   },
 
-  setLoading: (boolean) => {
-    App.loading = boolean
-    const loader = $('#loader')
-    const content = $('#content')
-    if (boolean) {
-      loader.show()
-      content.hide()
-    } else {
-      loader.hide()
-      content.show()
-    }
+  setLoading: (bool) => {
+    App.loading = bool;
+    $('#loader').toggle(bool);
+    $('#content').toggle(!bool);
   }
-}
+};
 
-$(() => {
-  $(window).load(() => {
-    App.load()
-  })
-})
+$(() => $(window).on('load', App.load));
