@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ethereum Blockchain Application - Todo List
 
 Simple todo list powered by smart contracts. Understand how blockchain works and how to connect an application with a decentralized platform. Unlike traditionally todo list applications, there is no central database where data is located. The data, todo list items, are stored on a network distributed over the blockchain.
@@ -34,3 +35,7 @@ $ npm run dev
 #deploy:
 3.truffle migrate --reset
 4. npm run dev
+=======
+# To_do_DAPP
+This is the to do app
+>>>>>>> 9df1283416a7f47096eaa967e5e25548c3d438e3
