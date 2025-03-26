@@ -1,5 +1,6 @@
-const Migrations = artifacts.require("Migrations");
+// 2_deploy_contracts.js
+const TodoList = artifacts.require("./TodoList.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(Migrations);
+  deployer.deploy(TodoList);
 };
