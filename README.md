@@ -36,6 +36,4 @@ $ npm run dev
 3.truffle migrate --reset
 4. npm run dev
 =======
-# To_do_DAPP
-This is the to do app
->>>>>>> 9df1283416a7f47096eaa967e5e25548c3d438e3
+ hyyyyyyy
