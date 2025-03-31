@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Always force a fresh login -->
-  <head>
-    <!-- Redirect to login if NOT authenticated -->
-    <script>
-      if (!localStorage.getItem('loggedUser')) {
-        window.location.replace('login.html');
-      }
-    </script>
-    …
-  </head>
-  
-
+  <!-- Force a fresh login and redirect if not authenticated -->
+  <script>
+    if (!localStorage.getItem('loggedUser')) {
+      window.location.replace('login.html');
+    }
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ethereum Todo List</title>
+  <title>Ethereum Todo List - Restaurant Checklist</title>
+  <!-- Bootstrap CSS -->
   <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    main { margin-top: 60px; }
-    #content { display: none; }
-    ul { list-style:none; padding:0; }
-    .taskTemplate { display:none; }
-    #completedTaskList .content { text-decoration: line-through; color: grey; }
-  </style>
+  <!-- Custom CSS for premium styling -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <nav class="navbar navbar-dark bg-dark fixed-top">
+  <nav class="navbar navbar-dark fixed-top">
     <span class="navbar-brand px-3">Ethereum Todo List</span>
     <button class="btn btn-outline-light" onclick="logout()">Logout</button>
   </nav>
-
   <main class="container">
     <div id="loader"><p>Loading…</p></div>
     <div id="content">
-      <form onsubmit="App.createTask(); return false;">
-        <input id="newTask" class="form-control mb-3" placeholder="Add task..." required>
+      <p>Connected Account: <span id="account">Not connected</span></p>
+      <!-- Add Task Form with role selection -->
+      <form onsubmit="App.createTask(); return false;" class="mb-3">
+        <input id="newTask" class="form-control mb-2" placeholder="Add task..." required>
+        <select id="taskRole" class="form-select mb-2">
+          <option value="chef">Chef</option>
+          <option value="kp">Kitchen Porter</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Add Task</button>
       </form>
+      <!-- Hidden Task Template -->
       <ul class="taskTemplate">
         <li>
-          <label><input type="checkbox"/><span class="content"></span></label>
+          <label>
+            <input type="checkbox">
+            <span class="content"></span>
+          </label>
         </li>
       </ul>
-      <ul id="taskList"></ul>
-      <ul id="completedTaskList"></ul>
+      <!-- Chef Tasks -->
+      <h3>Chef Tasks (Incomplete)</h3>
+      <ul id="chefTasks"></ul>
+      <h3>Chef Tasks (Completed)</h3>
+      <ul id="chefTasksCompleted"></ul>
+      <!-- Kitchen Porter Tasks -->
+      <h3>Kitchen Porter Tasks (Incomplete)</h3>
+      <ul id="kpTasks"></ul>
+      <h3>Kitchen Porter Tasks (Completed)</h3>
+      <ul id="kpTasksCompleted"></ul>
     </div>
   </main>
-
+  <!-- Scripts -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="vendor/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="vendor/web3/dist/web3.min.js"></script>

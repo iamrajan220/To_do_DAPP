@@ -18,20 +18,6 @@ app.post('/login', (req, res) => {
   return res.json({ success: true });
 });
 
-// GET all tasks
-app.get('/tasks', (req, res) => {
-  const tasks = JSON.parse(fs.readFileSync(TASK_FILE));
-  res.json(tasks);
-});
-
-// CREATE a new task
-app.post('/tasks', (req, res) => {
-  const newTask = req.body;
-  const tasks = JSON.parse(fs.readFileSync(TASK_FILE));
-  tasks.push(newTask);
-  fs.writeFileSync(TASK_FILE, JSON.stringify(tasks, null, 2));
-  res.status(201).json(newTask);
-});
 
 // start server
 const PORT = process.env.PORT || 5000;

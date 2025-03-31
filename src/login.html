@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Login — Ethereum Todo List</title>
-  <style>
-    body { display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; }
-    form { border:1px solid #ccc; padding:2rem; border-radius:6px; width:300px; }
-    input, button { width:100%; margin:0.5rem 0; padding:0.5rem; }
-    p { color:red; }
-  </style>
+  <!-- Bootstrap CSS -->
+  <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS for login styling -->
+  <link rel="stylesheet" href="login.css">
 </head>
 <body>
-  <form id="loginForm">
-    <h2>Login</h2>
-    <input id="username" placeholder="Username" required />
-    <input id="password" type="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-    <p id="error"></p>
-  </form>
+  <div class="login-container">
+    <form id="loginForm">
+      <h2>Login</h2>
+      <input id="username" placeholder="Username" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <p id="error"></p>
+    </form>
+  </div>
   <script>
     document.getElementById('loginForm').onsubmit = async e => {
       e.preventDefault();

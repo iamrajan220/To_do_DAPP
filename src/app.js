@@ -49,7 +49,7 @@ App = {
 
   renderTasks: async () => {
     // Clear current task lists
-    $('#taskList, #completedTaskList').empty();
+    $('#chefTasks, #chefTasksCompleted, #kpTasks, #kpTasksCompleted').empty();
     const taskCount = await App.todoList.methods.taskCount().call();
     
     for (let i = 1; i <= taskCount; i++) {
@@ -62,11 +62,23 @@ App = {
         .prop('checked', task.completed)
         .on('click', App.toggleCompleted);
       
-      // Append the task to the appropriate list
       if (task.completed) {
-        $('#completedTaskList').append($taskItem);
-      } else {
-        $('#taskList').append($taskItem);
+        $taskItem.find('.content').addClass('completed-task');
+      }
+      
+      // Append to the appropriate list based on role and status
+      if (task.role === "kp") {
+        if (task.completed) {
+          $('#kpTasksCompleted').append($taskItem);
+        } else {
+          $('#kpTasks').append($taskItem);
+        }
+      } else {  // Default is chef
+        if (task.completed) {
+          $('#chefTasksCompleted').append($taskItem);
+        } else {
+          $('#chefTasks').append($taskItem);
+        }
       }
     }
   },
@@ -74,11 +86,10 @@ App = {
   createTask: async () => {
     App.setLoading(true);
     const content = $('#newTask').val().trim();
+    const role = $('#taskRole').val();
     if (content) {
       try {
-        // Send transaction and wait for confirmation
-        await App.todoList.methods.createTask(content)
-          .send({ from: App.account });
+        await App.todoList.methods.createTask(content).send({ from: App.account });
         $('#newTask').val('');
         console.log('Task created successfully!');
       } catch (error) {
@@ -86,7 +97,6 @@ App = {
         alert('Error creating task. Please try again.');
       }
     }
-    // Re-render tasks without reloading the page
     await App.render();
   },
 
@@ -94,15 +104,12 @@ App = {
     App.setLoading(true);
     const taskId = e.target.name;
     try {
-      // Send transaction to toggle task and wait for confirmation
-      await App.todoList.methods.toggleCompleted(taskId)
-        .send({ from: App.account });
+      await App.todoList.methods.toggleCompleted(taskId).send({ from: App.account });
       console.log('Task updated successfully!');
     } catch (error) {
       console.error('Error toggling task:', error);
       alert('Error updating task. Please try again.');
     }
-    // Update the task list after transaction confirmation
     await App.render();
   },
 
@@ -113,4 +120,4 @@ App = {
   }
 };
 
-$(() => $(window).on('load', App.load));
+$(window).on('load', App.load);
