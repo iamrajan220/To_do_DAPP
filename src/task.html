@@ -3,61 +3,125 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ethereum Todo List - Restaurant Checklist</title>
+  <title>Balen 5 star</title>
   <!-- Bootstrap CSS -->
   <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom CSS for premium styling -->
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <nav class="navbar navbar-dark fixed-top">
-    <span class="navbar-brand px-3">Ethereum Todo List</span>
-    <button class="btn btn-outline-light" onclick="logout()">Logout</button>
+  <nav class="navbar navbar-dark fixed-top" style="background: #2c3e50;">
+    <div class="container-fluid">
+      <span class="navbar-brand px-3">Balen 5 Star Todo Checklist List</span>
+      <button class="btn btn-outline-light" onclick="logout()">Logout</button>
+    </div>
   </nav>
-  <main class="container">
-    <div id="loader"><p>Loading…</p></div>
-    <div id="content">
-      <p>Connected Account: <span id="account">Not connected</span></p>
-      <!-- Add Task Form with role selection -->
-      <form onsubmit="App.createTask(); return false;" class="mb-3">
-        <input id="newTask" class="form-control mb-2" placeholder="Add task..." required>
-        <select id="taskRole" class="form-select mb-2">
-          <option value="chef">Chef</option>
-          <option value="kp">Kitchen Porter</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Add Task</button>
-      </form>
-      <!-- Hidden Task Template -->
+
+  <main class="container" style="padding-top: 80px;">
+    <!-- Loader -->
+    <div id="loader" class="text-center my-5"><p>Loading…</p></div>
+
+    <!-- Content -->
+    <div id="content" style="display:none;">
+      <div class="mb-4">
+        <h2 class="fw-bold text-center mb-3">🍽️ Restaurant Checklist📋</h2>
+
+        <p>Connected Account: <span id="account" class="fw-semibold">Not connected</span></p>
+      </div>
+
+      <!-- Add Task Form -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+          <i class="bi bi-plus-circle me-2"></i>Add New Task
+        </div>
+        <div class="card-body">
+          <form onsubmit="App.createTask(); return false;">
+            <div class="mb-3">
+              <input id="newTask" class="form-control" placeholder="Add task..." required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save"></i> Save Task
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tasks Row -->
+      <div class="row">
+        <!-- Chef Tasks Container -->
+        <div class="col-md-6 mb-4" id="chefContainer">
+          <div class="card h-100 shadow">
+            <div class="card-header bg-warning">
+              <h5 class="card-title mb-0"><i class="bi bi-egg-fried me-2"></i>Chef Tasks</h5>
+            </div>
+            <div class="card-body">
+              <h6 class="text-muted mb-2">Incomplete</h6>
+              <ul id="chefTasks" class="mb-4"></ul>
+
+              <h6 class="text-muted mb-2">Completed</h6>
+              <ul id="chefTasksCompleted"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kitchen Porter Tasks Container -->
+        <div class="col-md-6 mb-4" id="kpContainer">
+          <div class="card h-100 shadow">
+            <div class="card-header bg-success text-white">
+              <h5 class="card-title mb-0"><i class="bi bi-bucket me-2"></i>Kitchen Porter Tasks</h5>
+            </div>
+            <div class="card-body">
+              <h6 class="text-muted mb-2">Incomplete</h6>
+              <ul id="kpTasks" class="mb-4"></ul>
+
+              <h6 class="text-muted mb-2">Completed</h6>
+              <ul id="kpTasksCompleted"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Template (hidden) -->
       <ul class="taskTemplate" style="display: none;">
-        <li>
-          <label>
-            <input type="checkbox">
-            <span class="content"></span>
-          </label>
+        <li class="py-2 border-bottom d-flex align-items-center">
+          <input type="checkbox" class="form-check-input me-2" style="width:1.2em;height:1.2em;">
+          <span class="content flex-grow-1"></span>
         </li>
       </ul>
-      <!-- Chef Tasks -->
-      <h3>Chef Tasks (Incomplete)</h3>
-      <ul id="chefTasks"></ul>
-      <h3>Chef Tasks (Completed)</h3>
-      <ul id="chefTasksCompleted"></ul>
-      <!-- Kitchen Porter Tasks -->
-      <h3>Kitchen Porter Tasks (Incomplete)</h3>
-      <ul id="kpTasks"></ul>
-      <h3>Kitchen Porter Tasks (Completed)</h3>
-      <ul id="kpTasksCompleted"></ul>
     </div>
   </main>
+
   <!-- Scripts -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="vendor/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="vendor/web3/dist/web3.min.js"></script>
+  <!-- Link to your updated app.js below -->
   <script src="app.js"></script>
+
   <script>
     function logout() {
-      // Redirect back to the login page (index.html)
-      window.location.replace('index.html');
+      localStorage.clear(); // Clear role & any other local storage
+      window.location.replace('index.html'); // Return to login
     }
+
+    // On page load, enforce role-based visibility
+    document.addEventListener('DOMContentLoaded', () => {
+      const userRole = localStorage.getItem('userRole');
+      // If user is not logged in or no role, redirect to login
+      if (!userRole) {
+        window.location.replace('index.html');
+        return;
+      }
+
+      // If Chef, hide Kitchen Porter container
+      if (userRole === 'chef') {
+        document.getElementById('kpContainer').style.display = 'none';
+      } else if (userRole === 'kp') {
+        document.getElementById('chefContainer').style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>

@@ -35,7 +35,8 @@ app.post('/login', (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
-  return res.json({ success: true });
+  // Return success + the user's role
+  return res.json({ success: true, role: user.role });
 });
 
 // 6) GET tasks: read from tasks.json

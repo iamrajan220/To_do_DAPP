@@ -56,24 +56,33 @@ const App = {
       const task = await App.todoList.methods.tasks(i).call();
       const $taskItem = $('.taskTemplate li').clone().show();
 
+      // Task content
       $taskItem.find('.content').text(task.content);
+
+      // If task is completed, add a style
+      if (task.completed) {
+        $taskItem.find('.content').addClass('completed-task');
+      }
+
+      // Show who completed it if it is completed
+      if (task.completed && task.completedBy) {
+        $taskItem.append(`<small class=\"ms-2\">(Completed by: ${task.completedBy})</small>`);
+      }
+
+      // Checkbox toggles completion
       $taskItem.find('input')
         .prop('name', task.id)
         .prop('checked', task.completed)
         .on('click', App.toggleCompleted);
 
-      if (task.completed) {
-        $taskItem.find('.content').addClass('completed-task');
-      }
-
-      // Append to the appropriate list based on role and status
-      if (task.role === "kp") {
+      // Append to correct list (chef or kp), incomplete or complete
+      if (task.role === 'kp') {
         if (task.completed) {
           $('#kpTasksCompleted').append($taskItem);
         } else {
           $('#kpTasks').append($taskItem);
         }
-      } else {  // Default is chef
+      } else { // 'chef'
         if (task.completed) {
           $('#chefTasksCompleted').append($taskItem);
         } else {
@@ -86,17 +95,21 @@ const App = {
   createTask: async () => {
     App.setLoading(true);
     const content = $('#newTask').val().trim();
-    const role = $('#taskRole').val();  // Retrieve the selected role
-    if (content) {
+    // Retrieve role from localStorage (set during login)
+    const role = localStorage.getItem('userRole');
+
+    if (content && role) {
       try {
-        // Pass both content and role to createTask
+        // Create the task with the user's role (chef or kp)
         await App.todoList.methods.createTask(content, role).send({ from: App.account });
-        $('#newTask').val('');
+        $('#newTask').val(''); // Clear input
         console.log('Task created successfully!');
       } catch (error) {
         console.error('Error creating task:', error);
         alert('Error creating task. Please try again.');
       }
+    } else {
+      alert('Task content or user role missing');
     }
     await App.render();
   },
@@ -104,8 +117,10 @@ const App = {
   toggleCompleted: async (e) => {
     App.setLoading(true);
     const taskId = e.target.name;
+    const userRole = localStorage.getItem('userRole'); // "chef" or "kp"
     try {
-      await App.todoList.methods.toggleCompleted(taskId).send({ from: App.account });
+      // 'toggleCompleted(uint, string)' in contract
+      await App.todoList.methods.toggleCompleted(taskId, userRole).send({ from: App.account });
       console.log('Task updated successfully!');
     } catch (error) {
       console.error('Error toggling task:', error);
@@ -113,7 +128,7 @@ const App = {
     }
     await App.render();
   },
-
+  
   setLoading: (bool) => {
     App.loading = bool;
     $('#loader').toggle(bool);

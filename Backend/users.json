@@ -1,5 +1,13 @@
+
 [
-  { "name": "alice", "password": "password123" },
-  { "name": "bob",   "password": "secret" },
-  { "name": "a",     "password": "12" }
+  {
+    "name": "chef",
+    "password": "chefpass",
+    "role": "chef"
+  },
+  {
+    "name": "kp",
+    "password": "kppass",
+    "role": "kp"
+  }
 ]
