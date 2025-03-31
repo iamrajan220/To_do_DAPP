@@ -1,4 +1,4 @@
-App = {
+const App = {
   loading: false,
   todoList: null,
   account: null,
@@ -51,21 +51,21 @@ App = {
     // Clear current task lists
     $('#chefTasks, #chefTasksCompleted, #kpTasks, #kpTasksCompleted').empty();
     const taskCount = await App.todoList.methods.taskCount().call();
-    
+
     for (let i = 1; i <= taskCount; i++) {
       const task = await App.todoList.methods.tasks(i).call();
       const $taskItem = $('.taskTemplate li').clone().show();
-      
+
       $taskItem.find('.content').text(task.content);
       $taskItem.find('input')
         .prop('name', task.id)
         .prop('checked', task.completed)
         .on('click', App.toggleCompleted);
-      
+
       if (task.completed) {
         $taskItem.find('.content').addClass('completed-task');
       }
-      
+
       // Append to the appropriate list based on role and status
       if (task.role === "kp") {
         if (task.completed) {
@@ -86,10 +86,11 @@ App = {
   createTask: async () => {
     App.setLoading(true);
     const content = $('#newTask').val().trim();
-    const role = $('#taskRole').val();
+    const role = $('#taskRole').val();  // Retrieve the selected role
     if (content) {
       try {
-        await App.todoList.methods.createTask(content).send({ from: App.account });
+        // Pass both content and role to createTask
+        await App.todoList.methods.createTask(content, role).send({ from: App.account });
         $('#newTask').val('');
         console.log('Task created successfully!');
       } catch (error) {
